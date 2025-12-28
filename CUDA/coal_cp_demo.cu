@@ -1,3 +1,8 @@
+/*
+ *   MEMORY COALESCING DEMO
+
+ */
+
 #include <cstdio>
 #include <cstdlib>
 #include <cuda_runtime.h>
