@@ -2,6 +2,8 @@
  *  CUDA ATOMIC DEMO
  */
 
+%%writefile atomic_demo.cu
+
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
@@ -51,15 +53,16 @@ int main() {
     cudaMemcpy(dev_res, &result, sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(dev_res2, &result2, sizeof(int), cudaMemcpyHostToDevice);
 
-   
+    // --- Timing setup ---
     cudaEvent_t start, stop;
     float timeRace = 0.0f, timeAtomic = 0.0f;
 
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
+
     // warm-up
-    vectSumAtomic<<<blocks, threads>>>(dev_vect, N, dev_res2);
+    vectSumRace<<<blocks, threads>>>(dev_vect, N, dev_res2);
     cudaDeviceSynchronize();
 
     // --- Race kernel ---
@@ -79,7 +82,10 @@ int main() {
         return 1;
     }
 
-    // --- Atomic kernel ---
+    cudaDeviceSynchronize();
+    
+
+    // --- Atomic kernel timing ---
     cudaMemset(dev_res2, 0, sizeof(int));
     cudaEventRecord(start);
     for (int i = 0; i < iters; i++) {
@@ -96,7 +102,6 @@ int main() {
         return 1;
     }
 
-    
     cudaDeviceSynchronize();
 
     cudaMemcpy(&result, dev_res, sizeof(int), cudaMemcpyDeviceToHost);
